@@ -129,6 +129,36 @@ module ActiveLinkTo
     end
   end
   
+  def active_menu_to(*args, &block)
+    if block_given?
+      name          = capture(&block)
+      options       = args[0] || {}
+      html_options  = args[1] || {}
+    else
+      name          = args[0]
+      options       = args[1] || {}
+      html_options  = args[2] || {}
+    end
+    
+    options = options.clone
+    html_options = html_options.clone
+    
+    url = url_for(options)
+    active_link_options = html_options.delete(:active) || {}
+    css_class = active_class(url, active_link_options)
+    
+    html_options[:class] ||= ''
+    html_options[:class] += " #{css_class}" if !css_class.blank?
+    html_options[:class].blank? ? html_options.delete(:class) : html_options[:class].lstrip!
+    
+    if active_link_options[:disable_link] === true
+      content_tag(:span, name, html_options)
+    else
+      content_tag(:li, link_to(name, url), html_options)
+    end
+  end
+  
+  
   # Returns css class name. Takes the link's URL and :active paramers
   def active_class(url, options = {})
     if is_active_link?(url, options)
